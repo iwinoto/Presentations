@@ -148,6 +148,78 @@ References:
     echo http://$ISTIO_HOST:$ISTIO_PORT/productpage
     ```
 6. Open bookinfo product page at http://$ISTIO_HOST:$ISTIO_PORT/productpage
-
+7. Apply default destination rules - configure all subsets for the service versions
+    ```
+    kubectl apply -f destination-rule-all.yaml
+    ```
 
 ### Run Bookinfo scenario
+[Traffic management tutorial](https://istio.io/docs/tasks/traffic-management/request-routing/)
+1. **Default routing**
+    ```
+    kubectl delete -f virtual-service-all-v1.yaml
+    ```
+    1. Refresh productpage to show random review service
+2. **Routing to 1 version only**
+    1. Apply `virtual-service-all-v1.yaml` to send all requests to v1
+        ```
+        kubectl apply -f virtual-service-all-v1.yaml
+        ```
+    2. Refresh productpage to show only v1 of reviews is called
+    3. Show Kiali Traffic
+3. **Content based routing**
+    1. Apply `virtual-service-ratings-test-v2`
+    2. Login to productpage as `jason`. All responses use reviews v2 which calls ratings v1.
+    3. Anonymous and any other user routes to `reviews` v1.
+4. **Fault Injection**
+    1. Apply delay in call to `ratings` for Jason.
+        ```
+        kubectl apply -f virtual-service-ratings-test-delay.yaml
+        ```
+        For Jason only, responses from `ratings` is delayed by 7 seconds. This exposes a hardcoded timeout of 6 seconds in `productpage` service (coded are 3 second timeout plus 1 retry).
+
+        Issue is fixed in v3 of `ratings`. So change `virtualservice` rule to route all traffic to v3 for Jason.
+    2. Apply HTTP abort failure
+        ```
+        kubectl apply -f virtualservice-ratings-test-abort.yaml
+        ```
+5. **Circuit Breaker**
+    1. Deploy `httpbin` and set destination rules
+        ```
+        kubectl apply -f httpbin.yaml
+        kubectl apply -f httpbin-destination-rule-CB.yaml
+        ```
+    2. Deploy test client `fortio` and exec into the container
+        ```
+        kubectl apply -f fortio-deploy.yaml
+        # Export fortio pod so we can use it
+        export FORTIO_POD=$(kubectl get pod | awk '/fortio/ {print $1}')
+        kubectl exec -it $FORTIO_POD -c fortio /usr/local/bin/fortio -- load -curl  http://httpbin:8000/get
+        ```
+        Should get a 200 status. So now we are ready to break it.
+    3. CB is set for 1 connection and 1 pending request. So we'll swamp the service with 2 clients and send 20 requests.
+        ```
+        kubectl exec -it $FORTIO_POD -c fortio /usr/local/bin/fortio -- load -c 2 -qps 0 -n 20 -loglevel Warning http://httpbin:8000/get
+        ```
+    4. Most requests actually succeeded
+        ```
+        Code 200 : 19 (95.0 %)
+        Code 503 : 1 (5.0 %)
+        ```
+    5. Ramp up the clients to 3
+        ```
+        kubectl exec -it $FORTIO_POD -c fortio /usr/local/bin/fortio -- load -c 3 -qps 0 -n 20 -loglevel Warning http://httpbin:8000/get
+        ```
+    6. More requests are failing
+        ```
+        Code 200 : 12 (60.0 %)
+        Code 503 : 8 (40.0 %)
+        ```
+    7. Investigate istio tracing to see more details
+        ```
+        kubectl exec -it $FORTIO_POD  -c istio-proxy  -- sh -c 'curl localhost:15000/stats' | grep httpbin | grep pending
+        ....
+          cluster.outbound|8000||httpbin.default.svc.cluster.local.upstream_rq_pending_overflow: 35
+          cluster.outbound|8000||httpbin.default.svc.cluster.local.upstream_rq_pending_total: 47
+        ```
+        `pending_overflow` count is number of requests that were trapped by curcuit breaking.
