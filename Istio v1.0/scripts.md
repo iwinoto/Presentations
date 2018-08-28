@@ -94,9 +94,9 @@ References:
     # Create namespace
     kubectl create ns istio-system
     # Create kiali secret (username=admin, passphrase=password)
-    kubectl apply -f kiali-secret.yml
-    # Install istio (with using values from istio-values.yml)
-    helm install ibm/ibm-istio --name istio --namespace istio-system -f istio-values.yml
+    kubectl apply -f kiali-secret.yaml
+    # Install istio (with using values from istio-values.yaml)
+    helm install ibm/ibm-istio --name istio --namespace istio-system -f istio-values.yaml
     ```
 13. Set NodePort type service for kiali
     ```
@@ -121,8 +121,9 @@ References:
 2. Overview of Istio
 
 ## Demo
+[IBM Cloud tutorial on Istio](https://console.bluemix.net/docs/containers/cs_tutorials_istio.html#istio_tutorial)
 ### Overview of IKS cluster
-### Show IKS Helm chart on IBM Cloud page
+### Show Istio Helm chart on IBM Cloud page
 ### From CLI, install Istio helm.
 ### From CLI, install Bookinfo
 [Refer to Istio Bookinfo example.](https://istio.io/docs/examples/bookinfo/)
@@ -181,7 +182,7 @@ References:
         Issue is fixed in v3 of `ratings`. So change `virtualservice` rule to route all traffic to v3 for Jason.
     2. Apply HTTP abort failure
         ```
-        kubectl apply -f virtualservice-ratings-test-abort.yaml
+        kubectl apply -f virtual-service-ratings-test-abort.yaml
         ```
 5. **Circuit Breaker**
     1. Deploy `httpbin` and set destination rules
@@ -222,4 +223,4 @@ References:
           cluster.outbound|8000||httpbin.default.svc.cluster.local.upstream_rq_pending_overflow: 35
           cluster.outbound|8000||httpbin.default.svc.cluster.local.upstream_rq_pending_total: 47
         ```
-        `pending_overflow` count is number of requests that were trapped by curcuit breaking.
+        `pending_overflow` count is number of requests that were trapped by circuit breaking.
