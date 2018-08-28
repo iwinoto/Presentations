@@ -1,0 +1,20 @@
+telemetrygateway:
+  name: istio-telemetrygateway
+  grafanaEnabled: true
+  prometheusEnabled: true
+grafana:
+  enabled: true
+  security:
+    enabled: false
+prometheus:
+  enabled: true
+servicegraph:
+  enabled: true
+tracing:
+  enabled: true
+kiali:
+  enabled: true
+  ingress:
+    enabled: false
+certmanager:
+  enabled: false
