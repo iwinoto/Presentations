@@ -54,8 +54,10 @@ References:
         $ ibmcloud ks zones
         $ ibmcloud ks vlans --zone syd01
         ```
+    2. Check the `cluster-create.yaml` file. Make sure there are valid VLANs specified.
     2. Create the cluster, specify VLANs if existing VLAN should be used
         ```
+        ibmcloud ks cluster-create --file cluster-create.yaml
         ibmcloud ks cluster-create --zone syd01 \
           --machine-type u2c.2x4 --hardware shared \
           --disable-disk-encrypt \
@@ -86,7 +88,7 @@ References:
     ```
 10. Add the IBM helm repo
     ```
-    $ helm repo add ibm https://registry.bluemix.net/helm/ibm
+    $ helm repo add ibm-charts https://registry.bluemix.net/helm/ibm-charts
     ```
 11. **DO NOT** add kube Custom Resource Definitions (CRDs) to the cluster. This seems to be part of the chart now.
 12. Install Istio with helm
@@ -96,7 +98,7 @@ References:
     # Create kiali secret (username=admin, passphrase=password)
     kubectl apply -f kiali-secret.yaml
     # Install istio (with using values from istio-values.yaml)
-    helm install ibm/ibm-istio --name istio --namespace istio-system -f istio-values.yaml
+    helm install ibm-charts/ibm-istio --name istio --namespace istio-system -f istio-values.yaml
     ```
 13. Set NodePort type service for kiali
     ```
@@ -169,7 +171,7 @@ References:
     2. Refresh productpage to show only v1 of reviews is called
     3. Show Kiali Traffic
 3. **Content based routing**
-    1. Apply `virtual-service-ratings-test-v2`
+    1. Apply `virtual-service-reviews-test-v2`
     2. Login to productpage as `jason`. All responses use reviews v2 which calls ratings v1.
     3. Anonymous and any other user routes to `reviews` v1.
 4. **Fault Injection**
