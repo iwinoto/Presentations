@@ -1,9 +1,9 @@
 name: iw-iks-demo
-zone: syd01
+location: syd01
 machine-type: u2c.2x4
 hardware: shared
 workerNum: 2
 diskEncryption: false
 trusted: true
-private-vlan: <private_VLAN>
-public-vlan: <public_VLAN>
+public-vlan: <public_VLAN_ID>
+private-vlan: <private_VLAN_ID>

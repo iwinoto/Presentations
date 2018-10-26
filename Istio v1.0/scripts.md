@@ -3,6 +3,9 @@
 References:
 * [IBM Cloud tutorial](https://console.bluemix.net/docs/containers/cs_tutorials_istio.html#istio_tutorial)
 
+## TODO
+Review [Dan Berg set up](https://medium.com/@dancberg/how-to-setup-an-awesome-shell-experience-for-ibm-cloud-kubernetes-service-285467ddd455) and see what is worth incorporating.
+
 ## Scenario
 1. Load Istio from [IBM Helm chart](https://console.bluemix.net/containers-kubernetes/solutions/helm-charts/ibm/ibm-istio).
 2. Show deployments
@@ -27,12 +30,16 @@ References:
 2. Install required plugins
     ```
     # Install required plugins
-    $ ibmcloud plugin install IBM-Containers -r Bluemix
+    $ ibmcloud plugin install container-service -r Bluemix
     $ ibmcloud plugin install container-registry -r Bluemix
     ```
 3. Update installed plugins
     ```
     $ ibmcloud plugin update
+    ```
+4. Install `kubctl`
+    ```
+    sudo snap install kubectl --classic
     ```
 4. Install `helm` or upgrade `helm` client
     ```
@@ -45,19 +52,23 @@ References:
 4. Login to IBM Cloud
 5. Set IKS region
     ```
-    $ ibmcloud region-set au-syd
+    $ ibmcloud ks region-set au-syd
     ```
-6. Create IKS cluster
+6. Create IKS cluster.
+
+   *Note:* Seems like `zone` is being replaced with `location`. See (bug)[https://github.ibm.com/alchemy-containers/armada-cli/issues/979]
     1. For the desired zone, check if any vlans are available
         ```
         # get list of zones for current region
         $ ibmcloud ks zones
         $ ibmcloud ks vlans --zone syd01
         ```
-    2. Check the `cluster-create.yaml` file. Make sure there are valid VLANs specified.
-    2. Create the cluster, specify VLANs if existing VLAN should be used
+    2. Check the `cluster-create.yaml` file. Make sure there are valid VLANs specified. Specify VLANs from the list if existing VLAN should be used
         ```
         ibmcloud ks cluster-create --file cluster-create.yaml
+        ```
+        If for some reason the `cluster-create.yaml` file doesn't work, the expanded command line is:
+        ```
         ibmcloud ks cluster-create --zone syd01 \
           --machine-type u2c.2x4 --hardware shared \
           --disable-disk-encrypt \
@@ -76,6 +87,10 @@ References:
     ```
     $ ibmcloud ks cluster-config <cluster name>
     $ export KUBECONFIG=<Cluster context path>
+    ```
+    OR doing it all in 1 line:
+    ```
+    $(ibmcloud ks cluster-config <cluster name> | awk '/export/ {print}')
     ```
 8. Initialise `helm` and install `tiller` on cluster
     ```
