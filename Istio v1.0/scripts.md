@@ -6,6 +6,16 @@ References:
 ## TODO
 Review [Dan Berg set up](https://medium.com/@dancberg/how-to-setup-an-awesome-shell-experience-for-ibm-cloud-kubernetes-service-285467ddd455) and see what is worth incorporating.
 
+Use [`kube-ops-view`][github](https://github.com/hjacobs/kube-ops-view)
+
+See above for instructions on running with local Docker container. With Docker for Mac:
+```sh
+$ kubectl proxy --accept-hosts '.*' &
+$ docker run -it -p 8080:8080 -e CLUSTERS=http://docker.for.mac.localhost:8001 hjacobs/kube-ops-view
+```
+
+Alternatively run from cluster by installing [helm chart](https://console.bluemix.net/containers-kubernetes/solutions/helm-charts/kubernetes/kube-ops-view)
+
 ## Scenario
 1. Load Istio from [IBM Helm chart](https://console.bluemix.net/containers-kubernetes/solutions/helm-charts/ibm/ibm-istio).
 2. Show deployments
